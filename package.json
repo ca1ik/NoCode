@@ -180,7 +180,8 @@
       "nocodeZone": [
         {
           "id": "nocodeZone.dashboard",
-          "name": "Dashboard"
+          "name": "Dashboard",
+          "icon": "assets/icons/sidebar-icon.svg"
         }
       ]
     }
