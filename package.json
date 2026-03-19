@@ -1,0 +1,208 @@
+{
+  "name": "nocode-zone",
+  "displayName": "NoCode Zone",
+  "description": "Hide all code, browse YouTube/Web inside VS Code. Perfect for non-coders working with Copilot.",
+  "version": "1.0.0",
+  "publisher": "nocode-studio",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "nocode",
+    "hide code",
+    "youtube",
+    "browser",
+    "copilot",
+    "fun",
+    "entertainment"
+  ],
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "nocodeZone.toggle",
+        "title": "NoCode Zone: Toggle Mode",
+        "icon": {
+          "light": "assets/icons/toggle-light.svg",
+          "dark": "assets/icons/toggle-dark.svg"
+        }
+      },
+      {
+        "command": "nocodeZone.openBrowser",
+        "title": "NoCode Zone: Open Web Browser"
+      },
+      {
+        "command": "nocodeZone.openYouTube",
+        "title": "NoCode Zone: Open YouTube"
+      },
+      {
+        "command": "nocodeZone.toggleCopilotVisibility",
+        "title": "NoCode Zone: Toggle Copilot Visibility"
+      },
+      {
+        "command": "nocodeZone.showSettings",
+        "title": "NoCode Zone: Settings"
+      }
+    ],
+    "configuration": {
+      "title": "NoCode Zone",
+      "properties": {
+        "nocodeZone.defaultMode": {
+          "type": "string",
+          "default": "nocode",
+          "enum": [
+            "nocode",
+            "normal"
+          ],
+          "enumDescriptions": [
+            "Start with code hidden (NoCode Mode)",
+            "Start with normal VS Code view"
+          ],
+          "description": "Default mode when VS Code starts."
+        },
+        "nocodeZone.hideCopilot": {
+          "type": "boolean",
+          "default": false,
+          "description": "Hide Copilot panel by default in NoCode mode."
+        },
+        "nocodeZone.copilotAutoReveal": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-reveal Copilot when it needs your input (approval, answer, completion)."
+        },
+        "nocodeZone.homepageUrl": {
+          "type": "string",
+          "default": "https://www.youtube.com",
+          "description": "Default homepage URL for the embedded browser."
+        },
+        "nocodeZone.notificationSound": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play notification sound when Copilot needs attention."
+        },
+        "nocodeZone.theme": {
+          "type": "string",
+          "default": "midnight",
+          "enum": [
+            "midnight",
+            "ocean",
+            "sunset",
+            "forest",
+            "minimal"
+          ],
+          "description": "Visual theme for the NoCode overlay."
+        },
+        "nocodeZone.quickLinks": {
+          "type": "array",
+          "default": [
+            {
+              "name": "YouTube",
+              "url": "https://www.youtube.com",
+              "icon": "play"
+            },
+            {
+              "name": "Google",
+              "url": "https://www.google.com",
+              "icon": "search"
+            },
+            {
+              "name": "ChatGPT",
+              "url": "https://chat.openai.com",
+              "icon": "comment-discussion"
+            }
+          ],
+          "description": "Quick access links shown in NoCode mode dashboard."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "nocodeZone.toggle",
+        "key": "ctrl+shift+n",
+        "mac": "cmd+shift+n"
+      },
+      {
+        "command": "nocodeZone.openBrowser",
+        "key": "ctrl+shift+b",
+        "mac": "cmd+shift+b",
+        "when": "nocodeZone.active"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "nocodeZone.toggle",
+          "group": "navigation",
+          "when": "true"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "nocodeZone.toggle"
+        },
+        {
+          "command": "nocodeZone.openBrowser",
+          "when": "nocodeZone.active"
+        },
+        {
+          "command": "nocodeZone.openYouTube",
+          "when": "nocodeZone.active"
+        },
+        {
+          "command": "nocodeZone.toggleCopilotVisibility"
+        },
+        {
+          "command": "nocodeZone.showSettings"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "nocodeZone",
+          "title": "NoCode Zone",
+          "icon": "assets/icons/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "nocodeZone": [
+        {
+          "id": "nocodeZone.dashboard",
+          "name": "Dashboard"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.56.0",
+    "ts-loader": "^9.5.0",
+    "typescript": "^5.3.0",
+    "webpack": "^5.90.0",
+    "webpack-cli": "^5.1.0",
+    "@vscode/vsce": "^2.22.0"
+  }
+}
