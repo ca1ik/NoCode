@@ -143,7 +143,7 @@ export class NoCodeDashboardProvider implements vscode.WebviewViewProvider, vsco
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; frame-src https://www.youtube.com https://youtube.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; frame-src https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://youtube-nocookie.com;">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoCode Dashboard</title>
   <style>
@@ -291,7 +291,7 @@ export class NoCodeDashboardProvider implements vscode.WebviewViewProvider, vsco
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; frame-src https://www.youtube.com https://youtube.com; script-src 'nonce-${nonce}';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; frame-src https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com https://youtube-nocookie.com; script-src 'nonce-${nonce}';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NoCode Browser</title>
   <style>
@@ -339,7 +339,7 @@ export class NoCodeDashboardProvider implements vscode.WebviewViewProvider, vsco
     <div class="url">${this.escapeHtml(url)}</div>
     <button id="externalButton">Dis Tarayicida Ac</button>
   </header>
-  <iframe src="${this.escapeAttribute(embeddedUrl)}" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>
+  <iframe src="${this.escapeAttribute(embeddedUrl)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
   <script nonce="${nonce}">
     const vscodeApi = acquireVsCodeApi();
     document.getElementById('externalButton').addEventListener('click', () => {
@@ -367,12 +367,50 @@ export class NoCodeDashboardProvider implements vscode.WebviewViewProvider, vsco
   }
 
   private toEmbeddableUrl(url: string): string {
-    const youtubeMatch = url.match(/(?:v=|youtu\.be\/)([\w-]{11})/i);
-    if (youtubeMatch?.[1]) {
-      return `https://www.youtube.com/embed/${youtubeMatch[1]}?autoplay=0&rel=0`;
+    const videoId = this.extractYouTubeVideoId(url);
+    if (videoId) {
+      return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=0&rel=0&playsinline=1&modestbranding=1`;
     }
 
-    return 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+    return 'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ?autoplay=0&rel=0&playsinline=1&modestbranding=1';
+  }
+
+  /**
+   * Farkli YouTube URL formatlarini (watch, short, youtu.be, embed) tek video id'ye normalize eder.
+   * URL parse edilemezse null dondurerek güvenli fallback akışını tetikler.
+   */
+  private extractYouTubeVideoId(rawUrl: string): string | null {
+    try {
+      const parsedUrl = new URL(this.normalizeUrl(rawUrl));
+      const host = parsedUrl.hostname.toLowerCase();
+
+      if (host.includes('youtu.be')) {
+        const idFromPath = parsedUrl.pathname.split('/').filter(Boolean)[0];
+        return this.isValidYouTubeId(idFromPath) ? idFromPath : null;
+      }
+
+      if (host.includes('youtube.com') || host.includes('youtube-nocookie.com')) {
+        const idFromQuery = parsedUrl.searchParams.get('v');
+        if (this.isValidYouTubeId(idFromQuery)) {
+          return idFromQuery;
+        }
+
+        const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+        const embedIndex = pathParts.findIndex((part) => part === 'embed' || part === 'shorts');
+        if (embedIndex >= 0 && this.isValidYouTubeId(pathParts[embedIndex + 1])) {
+          return pathParts[embedIndex + 1];
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
+
+  /** Potansiyel YouTube id'sinin 11 karakter kuralını dogrular. */
+  private isValidYouTubeId(value: string | null | undefined): value is string {
+    return typeof value === 'string' && /^[\w-]{11}$/i.test(value);
   }
 
   private escapeHtml(value: string): string {
